@@ -10,6 +10,12 @@ struct OperationLog {
     date: String,
 }
 
+#[derive(Debug, Clone)]
+struct Sync {
+    key: String,
+    value: String,
+}
+
 static DB_FILE: &'static str = "db.duckdb";
 
 pub fn create_db() {
@@ -22,16 +28,31 @@ pub fn create_db() {
     let conn = Connection::open(DB_FILE).unwrap();
 
     if create_table {
-        println!("Creating table");
+        println!("=====");
+        println!("CREAZIONE TABELLE");
+
         conn.execute_batch(
         r"CREATE TABLE IF NOT EXISTS operation_log (id INTEGER PRIMARY KEY, operation VARCHAR, date VARCHAR);
-            CREATE SEQUENCE seq_id START 1;"
+            CREATE SEQUENCE seq_log_id START 1;"
       )
-          .unwrap();
+          .expect("ERRORE NELLA CREAZIONE DELLA TABELLA operation_log");
+
+        conn.execute_batch(
+            r"CREATE TABLE IF NOT EXISTS sync (key VARCHAR, value VARCHAR);;
+            CREATE UNIQUE INDEX kv_idx ON sync (key);",
+        )
+        .expect("ERRORE NELLA CREAZIONE DELLA TABELLA sync");
+
+        println!("TABELLE CREATE");
+        println!("=====");
+    } else {
+        println!("=====");
+        println!("DATABASE ESISTENTE");
+        println!("=====");
     }
 }
 
-pub fn create_log(valore: &str) {
+pub fn create_log(value: &str) {
     let now: DateTime<Utc> = Utc::now();
 
     if !Path::new(&DB_FILE).exists() {
@@ -41,13 +62,16 @@ pub fn create_log(valore: &str) {
     let conn = Connection::open(DB_FILE).unwrap();
 
     conn.execute(
-        "INSERT INTO operation_log (id, operation, date) VALUES (NEXTVAL('seq_id'), ?, ?)",
-        [valore, now.timestamp().to_string().as_str()],
+        "INSERT INTO operation_log (id, operation, date) VALUES (NEXTVAL('seq_log_id'), ?, ?)",
+        [value, now.timestamp().to_string().as_str()],
     )
-    .unwrap();
+    .expect("ERRORE DI INSERIMENTO NELLA TABELLA operation_log");
+
+    println!("OPERAZIONE AVVENUTA CON SUCCESSO!");
+    println!("=====");
 }
 
-pub fn read_db() {
+pub fn read_log() {
     let conn = Connection::open(DB_FILE).unwrap();
 
     let mut stmt = conn
@@ -76,10 +100,10 @@ pub fn read_db() {
         Cell::new("ID")
             .with_style(Attr::Bold)
             .with_style(Attr::ForegroundColor(color::RED)),
-        Cell::new("OPERATION")
+        Cell::new("OPERAZIONE")
             .with_style(Attr::Bold)
             .with_style(Attr::ForegroundColor(color::YELLOW)),
-        Cell::new("DATE")
+        Cell::new("DATA")
             .with_style(Attr::Bold)
             .with_style(Attr::ForegroundColor(color::GREEN)),
     ]));
@@ -95,4 +119,61 @@ pub fn read_db() {
     }
 
     table.printstd();
+    println!("=====");
+}
+
+pub fn create_sync(key: &str, value: &str) {
+    if !Path::new(&DB_FILE).exists() {
+        create_db();
+    }
+
+    let conn = Connection::open(DB_FILE).unwrap();
+
+    conn.execute(
+        "INSERT INTO sync (key, value) VALUES (?, ?) ON CONFLICT DO UPDATE SET value = ?",
+        [key, value, value],
+    )
+    .expect("ERRORE DI INSERIMENTO NELLA TABELLA sync");
+
+    println!("OPERAZIONE AVVENUTA CON SUCCESSO!");
+    println!("=====");
+}
+
+pub fn read_sync() {
+    let conn = Connection::open(DB_FILE).unwrap();
+
+    let mut stmt = conn
+        .prepare("SELECT key, value FROM sync ORDER BY key ASC")
+        .unwrap();
+
+    let rows = stmt
+        .query_map([], |row| {
+            let key: String = row.get(0)?;
+            let value: String = row.get(1)?;
+
+            Ok(Sync { key, value })
+        })
+        .unwrap();
+
+    let mut table = Table::new();
+    table.add_row(Row::new(vec![
+        Cell::new("CHIAVE")
+            .with_style(Attr::Bold)
+            .with_style(Attr::ForegroundColor(color::YELLOW)),
+        Cell::new("VALORE")
+            .with_style(Attr::Bold)
+            .with_style(Attr::ForegroundColor(color::GREEN)),
+    ]));
+
+    for row in rows {
+        let sync = row.unwrap();
+
+        table.add_row(Row::new(vec![
+            Cell::new(&sync.key),
+            Cell::new(&sync.value),
+        ]));
+    }
+
+    table.printstd();
+    println!("=====");
 }

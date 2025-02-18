@@ -8,4 +8,4 @@ chrono = "0.4.39"
 dialoguer = "0.11.0"
 duckdb = { version = "1.2.0", features = ["bundled"] }
 prettytable-rs = "0.10.0"
-rand = "0.8.5"
+zip_archive = "1.2.2"
