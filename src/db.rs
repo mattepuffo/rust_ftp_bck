@@ -131,7 +131,7 @@ pub fn create_sync(key: &str, value: &str) {
 
     conn.execute(
         "INSERT INTO sync (key, value) VALUES (?, ?) ON CONFLICT DO UPDATE SET value = ?",
-        [key, value, value],
+        [key.to_lowercase(), value.to_lowercase(), value.to_lowercase()],
     )
     .expect("ERRORE DI INSERIMENTO NELLA TABELLA sync");
 
