@@ -4,35 +4,14 @@ use prettytable::{color, Attr, Cell, Row, Table};
 use std::path::Path;
 
 #[derive(Debug, Clone)]
-struct Sync {
-  key: String,
-  value: String,
+pub(crate) struct Sync {
+  pub(crate) key: String,
+  pub(crate) value: String,
 }
 
 static DB_FILE: &'static str = "db.duckdb";
 
-pub fn create_sync(key: &str, value: &str) {
-  if !Path::new(&DB_FILE).exists() {
-    db::create_db();
-  }
-
-  let conn = Connection::open(DB_FILE).unwrap();
-
-  conn.execute(
-    "INSERT INTO sync (key, value) VALUES (?, ?) ON CONFLICT DO UPDATE SET value = ?",
-    [
-      key.to_lowercase(),
-      value.to_lowercase(),
-      value.to_lowercase(),
-    ],
-  )
-    .expect("ERRORE DI INSERIMENTO NELLA TABELLA sync");
-
-  println!("OPERAZIONE AVVENUTA CON SUCCESSO!");
-  println!("=====");
-}
-
-pub fn read_sync() {
+pub fn get_all_sync() {
   let conn = Connection::open(DB_FILE).unwrap();
 
   let mut stmt = conn
@@ -65,5 +44,40 @@ pub fn read_sync() {
   }
 
   table.printstd();
+  println!("=====");
+}
+
+pub fn get_sync_by_key(k: &str) -> Sync {
+  let conn = Connection::open(DB_FILE).unwrap();
+
+  let mut stmt = conn
+    .prepare("SELECT key, value FROM sync WHERE key = ?")
+    .unwrap();
+
+  let (key, value): (String, String) = stmt.query_row([k], |row| {
+    Ok((row.get(0)?, row.get(1)?))
+  }).unwrap();
+
+  Sync { key, value }
+}
+
+pub fn create_sync(key: &str, value: &str) {
+  if !Path::new(&DB_FILE).exists() {
+    db::create_db();
+  }
+
+  let conn = Connection::open(DB_FILE).unwrap();
+
+  conn.execute(
+    "INSERT INTO sync (key, value) VALUES (?, ?) ON CONFLICT DO UPDATE SET value = ?",
+    [
+      key.to_lowercase(),
+      value.to_lowercase(),
+      value.to_lowercase(),
+    ],
+  )
+    .expect("ERRORE DI INSERIMENTO NELLA TABELLA sync");
+
+  println!("OPERAZIONE AVVENUTA CON SUCCESSO!");
   println!("=====");
 }

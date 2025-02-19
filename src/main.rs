@@ -3,6 +3,7 @@ mod ftp;
 mod log;
 mod sync;
 
+use std::fmt::Display;
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::Select;
 use std::io::{self, Write};
@@ -46,7 +47,7 @@ fn gestione_sync() {
       .unwrap();
 
     match scelta {
-      0 => sync::read_sync(),
+      0 => sync::get_all_sync(),
       1 => {
         println!("SCRIVI DUE VALORI DEL SYNC");
         println!("NOME E PATH DA COMPRIMERE SEPARATI DAL CARATTERE |");
@@ -104,10 +105,27 @@ fn gestione_ftp() {
 
     match scelta {
       0 => {
-        exec_bck()
+        println!("SCRIVI SYNC E FTP SERVER SEPARATI DAL CARATTERE |");
+        println!("AD ESEMPIO: nome1 | server1");
+
+        io::stdout().flush().unwrap();
+
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).unwrap();
+
+        let mut parts = input.trim().split("|");
+
+        let sync_name = parts.next().unwrap_or("").trim();
+        let ftp_server = parts.next().unwrap_or("").trim();
+
+        let exec_sync: sync::Sync = sync::get_sync_by_key("nome1");
+        println!("{}:{}", exec_sync.key, exec_sync.value);
+
+        let ftp_server: ftp::FtpServer = ftp::get_server_by_name("server1");
+        println!("{}:{}", ftp_server.name, ftp_server.username);
       }
       1 => {
-        ftp::read_server()
+        ftp::get_all_server()
       }
       2 => {
         println!("CREA UN SERVER FTP");
@@ -131,23 +149,5 @@ fn gestione_ftp() {
       3 => break,
       _ => unreachable!(),
     }
-  }
-}
-
-fn exec_bck() {
-  let mut opzioni = vec![];
-  let mut list: Vec<ftp::FtpServer> = ftp::list_server();
-
-  for item in list.iter_mut() {
-    opzioni.push(item.name.clone());
-  }
-
-  loop {
-    let scelta = Select::with_theme(&ColorfulTheme::default())
-      .with_prompt("SCEGLI SERVER")
-      .default(0)
-      .items(&opzioni)
-      .interact()
-      .unwrap();
   }
 }
