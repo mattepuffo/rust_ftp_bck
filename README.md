@@ -9,4 +9,7 @@ Internamente uso DuckDB per la configurazione e il salvataggio di log in cui mem
 - svuotare log
 - zip
 - upload FTP
+- delete server
+- delete sync
+- delete file zip
 

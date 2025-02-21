@@ -25,7 +25,7 @@ pub fn create_db() {
       .expect("ERRORE NELLA CREAZIONE DELLA TABELLA operation_log");
 
     conn.execute_batch(
-      r"CREATE TABLE IF NOT EXISTS sync (key VARCHAR, value VARCHAR);
+      r"CREATE TABLE IF NOT EXISTS sync (key VARCHAR, value VARCHAR, server VARCHAR);
             CREATE UNIQUE INDEX kv_idx ON sync (key);",
     )
       .expect("ERRORE NELLA CREAZIONE DELLA TABELLA sync");

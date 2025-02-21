@@ -24,39 +24,39 @@ pub fn get_all_server() {
   let conn = Connection::open(DB_FILE).unwrap();
 
   let mut stmt = conn
-    .prepare("SELECT name, host, username, password FROM ftp ORDER BY name DESC")
-    .unwrap();
+      .prepare("SELECT name, host, username, password FROM ftp ORDER BY name DESC")
+      .unwrap();
 
   let rows = stmt
-    .query_map([], |row| {
-      let name: String = row.get(0)?;
-      let host: String = row.get(1)?;
-      let username: String = row.get(2)?;
-      let password: String = row.get(3)?;
+      .query_map([], |row| {
+        let name: String = row.get(0)?;
+        let host: String = row.get(1)?;
+        let username: String = row.get(2)?;
+        let password: String = row.get(3)?;
 
-      Ok(FtpServer {
-        name,
-        host,
-        username,
-        password,
+        Ok(FtpServer {
+          name,
+          host,
+          username,
+          password,
+        })
       })
-    })
-    .unwrap();
+      .unwrap();
 
   let mut table = Table::new();
   table.add_row(Row::new(vec![
     Cell::new("NOME")
-      .with_style(Attr::Bold)
-      .with_style(Attr::ForegroundColor(color::RED)),
+        .with_style(Attr::Bold)
+        .with_style(Attr::ForegroundColor(color::RED)),
     Cell::new("HOST")
-      .with_style(Attr::Bold)
-      .with_style(Attr::ForegroundColor(color::YELLOW)),
+        .with_style(Attr::Bold)
+        .with_style(Attr::ForegroundColor(color::YELLOW)),
     Cell::new("USERNAME")
-      .with_style(Attr::Bold)
-      .with_style(Attr::ForegroundColor(color::GREEN)),
+        .with_style(Attr::Bold)
+        .with_style(Attr::ForegroundColor(color::GREEN)),
     Cell::new("PASSWORD")
-      .with_style(Attr::Bold)
-      .with_style(Attr::ForegroundColor(color::BLUE)),
+        .with_style(Attr::Bold)
+        .with_style(Attr::ForegroundColor(color::BLUE)),
   ]));
 
   for row in rows {
@@ -74,18 +74,27 @@ pub fn get_all_server() {
   println!("=====");
 }
 
-pub fn get_server_by_name(k: &str) -> FtpServer {
-  let conn = Connection::open(DB_FILE).unwrap();
+pub fn get_server_by_name(k: &str) -> Result<FtpServer, String> {
+  let conn = Connection::open(DB_FILE)
+      .map_err(|e| e.to_string())?;
 
   let mut stmt = conn
-    .prepare("SELECT name, host, username, password FROM ftp WHERE name = ?")
-    .unwrap();
+      .prepare("SELECT name, host, username, password FROM ftp WHERE name = ?")
+      .map_err(|e| e.to_string())?;
 
-  let (name, host, username, password): (String, String, String, String) = stmt.query_row([k], |row| {
-    Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?))
-  }).unwrap();
+  let mut rows = stmt.query([k])
+      .map_err(|e| e.to_string())?;
 
-  FtpServer { name, host, username, password }
+  if let Some(row) = rows.next().map_err(|e| e.to_string())? {
+    Ok(FtpServer {
+      name: row.get(0).map_err(|e| e.to_string())?,
+      host: row.get(1).map_err(|e| e.to_string())?,
+      username: row.get(2).map_err(|e| e.to_string())?,
+      password: row.get(3).map_err(|e| e.to_string())?,
+    })
+  } else {
+    Err("Non è stato trovato alcun record".to_string())
+  }
 }
 
 pub fn add_server(name: &str, host: &str, username: &str, password: &str) {
@@ -96,10 +105,10 @@ pub fn add_server(name: &str, host: &str, username: &str, password: &str) {
   let conn = Connection::open(DB_FILE).unwrap();
 
   conn.execute(
-    "INSERT INTO ftp (name, host, username, password) VALUES (?, ?, ?, ?) ON CONFLICT UPDATE SET username = ?, password = ?",
+    "INSERT INTO ftp (name, host, username, password) VALUES (?, ?, ?, ?) ON CONFLICT DO UPDATE SET username = ?, password = ?",
     [name, host, username, password, username, password],
   )
-    .expect("ERRORE DI INSERIMENTO NELLA TABELLA ftp");
+      .expect("ERRORE DI INSERIMENTO NELLA TABELLA ftp");
 
   println!("OPERAZIONE AVVENUTA CON SUCCESSO!");
   println!("=====");
