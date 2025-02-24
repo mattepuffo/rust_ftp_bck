@@ -1,7 +1,7 @@
 use crate::db;
 use duckdb::Connection;
 use prettytable::{color, Attr, Cell, Row, Table};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone)]
 pub(crate) struct Sync {
@@ -10,10 +10,12 @@ pub(crate) struct Sync {
   pub(crate) server: String,
 }
 
+static DB_DIR: &'static str = "DATABASE";
 static DB_FILE: &'static str = "db.duckdb";
 
 pub fn get_all_sync() {
-  let conn = Connection::open(DB_FILE).unwrap();
+  let db_path: PathBuf = Path::new(DB_DIR).join(DB_FILE);
+  let conn = Connection::open(db_path).unwrap();
 
   let mut stmt = conn
       .prepare("SELECT key, value, server FROM sync ORDER BY key ASC")
@@ -57,7 +59,8 @@ pub fn get_all_sync() {
 }
 
 pub fn get_sync_by_key(k: &str) -> Result<Sync, String> {
-  let conn = Connection::open(DB_FILE)
+  let db_path: PathBuf = Path::new(DB_DIR).join(DB_FILE);
+  let conn = Connection::open(db_path)
       .map_err(|e| e.to_string())?;
 
   let mut stmt = conn
@@ -79,11 +82,8 @@ pub fn get_sync_by_key(k: &str) -> Result<Sync, String> {
 }
 
 pub fn create_sync(key: &str, value: &str, server: &str) {
-  if !Path::new(&DB_FILE).exists() {
-    db::create_db();
-  }
-
-  let conn = Connection::open(DB_FILE).unwrap();
+  let db_path: PathBuf = Path::new(DB_DIR).join(DB_FILE);
+  let conn = Connection::open(db_path).unwrap();
 
   conn.execute(
     "INSERT INTO sync (key, value, server) VALUES (?, ?, ?) ON CONFLICT DO UPDATE SET value = ?, server = ?",

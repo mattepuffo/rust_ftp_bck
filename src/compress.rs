@@ -1,11 +1,12 @@
 use std::{env, fs, io};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use zip_archive::Archiver;
+
+static ZIP_DIR: &'static str = "BCK";
 
 pub fn compress_directory(dir: &str) -> Result<String, String> {
   let dir_to_compress = PathBuf::from(dir);
-
-  let dest = PathBuf::from(env::temp_dir());
+  let dest = PathBuf::from(ZIP_DIR);
   let thread_count = 8;
 
   let mut archiver = Archiver::new();

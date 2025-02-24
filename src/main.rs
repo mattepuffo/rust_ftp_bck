@@ -8,7 +8,6 @@ use std::fmt::Display;
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::Select;
 use std::io::{self, Write};
-use std::{thread, time};
 
 fn main() {
   // compress::delete_file("C:\\Users\\user\\AppData\\Local\\Temp\\Documenti.zip").unwrap();
@@ -122,11 +121,11 @@ fn gestione_ftp() {
         // let sync_name = parts.next().unwrap_or("").trim();
         // let ftp_server = parts.next().unwrap_or("").trim();
 
-        let sync_name = "nome1";
-        let ftp_server = "nome1";
+        let sync_name = "sync1";
+        let ftp_server = "server1";
 
         let mut directory_to_zip = String::new();
-        match sync::get_sync_by_key(ftp_server) {
+        match sync::get_sync_by_key(sync_name) {
           Ok(sync) => directory_to_zip = sync.value,
           Err(err) => {
             println!("Errore: {}", err);
@@ -135,7 +134,7 @@ fn gestione_ftp() {
         }
 
         let mut upload_server = String::new();
-        match ftp::get_server_by_name(sync_name) {
+        match ftp::get_server_by_name(ftp_server) {
           Ok(server) => upload_server = server.host,
           Err(err) => {
             println!("Errore: {}", err);
@@ -154,9 +153,6 @@ fn gestione_ftp() {
 
         // println!("DIR TO ZIP: {}", directory_to_zip);
         // println!("UPLOAD SERVER: {}", upload_server);
-
-        thread::sleep(time::Duration::from_millis(5));
-        compress::delete_file(&*file_zipped).unwrap();
       }
       1 => {
         ftp::get_all_server()

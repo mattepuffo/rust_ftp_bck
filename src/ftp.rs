@@ -1,8 +1,7 @@
 use std::fmt;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use duckdb::Connection;
 use prettytable::{color, Attr, Cell, Row, Table};
-use crate::db;
 
 #[derive(Debug, Clone)]
 pub(crate) struct FtpServer {
@@ -18,10 +17,12 @@ impl fmt::Display for FtpServer {
   }
 }
 
+static DB_DIR: &'static str = "DATABASE";
 static DB_FILE: &'static str = "db.duckdb";
 
 pub fn get_all_server() {
-  let conn = Connection::open(DB_FILE).unwrap();
+  let db_path: PathBuf = Path::new(DB_DIR).join(DB_FILE);
+  let conn = Connection::open(db_path).unwrap();
 
   let mut stmt = conn
       .prepare("SELECT name, host, username, password FROM ftp ORDER BY name DESC")
@@ -75,7 +76,8 @@ pub fn get_all_server() {
 }
 
 pub fn get_server_by_name(k: &str) -> Result<FtpServer, String> {
-  let conn = Connection::open(DB_FILE)
+  let db_path: PathBuf = Path::new(DB_DIR).join(DB_FILE);
+  let conn = Connection::open(db_path)
       .map_err(|e| e.to_string())?;
 
   let mut stmt = conn
@@ -98,11 +100,8 @@ pub fn get_server_by_name(k: &str) -> Result<FtpServer, String> {
 }
 
 pub fn add_server(name: &str, host: &str, username: &str, password: &str) {
-  if !Path::new(&DB_FILE).exists() {
-    db::create_db();
-  }
-
-  let conn = Connection::open(DB_FILE).unwrap();
+  let db_path: PathBuf = Path::new(DB_DIR).join(DB_FILE);
+  let conn = Connection::open(db_path).unwrap();
 
   conn.execute(
     "INSERT INTO ftp (name, host, username, password) VALUES (?, ?, ?, ?) ON CONFLICT DO UPDATE SET username = ?, password = ?",

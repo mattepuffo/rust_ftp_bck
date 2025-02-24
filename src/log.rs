@@ -1,8 +1,7 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use chrono::{DateTime, Utc};
 use duckdb::Connection;
 use prettytable::{color, Attr, Cell, Row, Table};
-use crate::db;
 
 #[derive(Debug, Clone)]
 struct OperationLog {
@@ -11,62 +10,61 @@ struct OperationLog {
   date: String,
 }
 
+static DB_DIR: &'static str = "DATABASE";
 static DB_FILE: &'static str = "db.duckdb";
 
 pub fn create_log(value: &str) {
   let now: DateTime<Utc> = Utc::now();
 
-  if !Path::new(&DB_FILE).exists() {
-    db::create_db();
-  }
-
-  let conn = Connection::open(DB_FILE).unwrap();
+  let db_path: PathBuf = Path::new(DB_DIR).join(DB_FILE);
+  let conn = Connection::open(db_path).unwrap();
 
   conn.execute(
     "INSERT INTO operation_log (id, operation, date) VALUES (NEXTVAL('seq_log_id'), ?, ?)",
     [value, now.timestamp().to_string().as_str()],
   )
-    .expect("ERRORE DI INSERIMENTO NELLA TABELLA operation_log");
+      .expect("ERRORE DI INSERIMENTO NELLA TABELLA operation_log");
 
   println!("OPERAZIONE AVVENUTA CON SUCCESSO!");
   println!("=====");
 }
 
 pub fn read_log() {
-  let conn = Connection::open(DB_FILE).unwrap();
+  let db_path: PathBuf = Path::new(DB_DIR).join(DB_FILE);
+  let conn = Connection::open(db_path).unwrap();
 
   let mut stmt = conn
-    .prepare("SELECT id, operation, date FROM operation_log ORDER BY id DESC")
-    .unwrap();
+      .prepare("SELECT id, operation, date FROM operation_log ORDER BY id DESC")
+      .unwrap();
 
   let rows = stmt
-    .query_map([], |row| {
-      let id: i32 = row.get(0)?;
-      let operation: String = row.get(1)?;
-      let date: String = row.get(2)?;
+      .query_map([], |row| {
+        let id: i32 = row.get(0)?;
+        let operation: String = row.get(1)?;
+        let date: String = row.get(2)?;
 
-      let timestamp = DateTime::from_timestamp(date.parse().unwrap(), 0).unwrap();
-      let formatted_date = timestamp.format("%Y-%m-%d %H:%M:%S").to_string();
+        let timestamp = DateTime::from_timestamp(date.parse().unwrap(), 0).unwrap();
+        let formatted_date = timestamp.format("%Y-%m-%d %H:%M:%S").to_string();
 
-      Ok(OperationLog {
-        id,
-        operation,
-        date: formatted_date,
+        Ok(OperationLog {
+          id,
+          operation,
+          date: formatted_date,
+        })
       })
-    })
-    .unwrap();
+      .unwrap();
 
   let mut table = Table::new();
   table.add_row(Row::new(vec![
     Cell::new("ID")
-      .with_style(Attr::Bold)
-      .with_style(Attr::ForegroundColor(color::RED)),
+        .with_style(Attr::Bold)
+        .with_style(Attr::ForegroundColor(color::RED)),
     Cell::new("OPERAZIONE")
-      .with_style(Attr::Bold)
-      .with_style(Attr::ForegroundColor(color::YELLOW)),
+        .with_style(Attr::Bold)
+        .with_style(Attr::ForegroundColor(color::YELLOW)),
     Cell::new("DATA")
-      .with_style(Attr::Bold)
-      .with_style(Attr::ForegroundColor(color::GREEN)),
+        .with_style(Attr::Bold)
+        .with_style(Attr::ForegroundColor(color::GREEN)),
   ]));
 
   for row in rows {
