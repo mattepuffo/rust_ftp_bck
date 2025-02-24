@@ -6,11 +6,8 @@ Internamente uso DuckDB per la configurazione e il salvataggio di log in cui mem
 
 ## TODO
 - file zip con nome e data
-- pulizia sottocartella zip
-- in fase di creazione ftp indicare quale config
+- in fase di creazione ftp indicare quale directory di upload
 - svuotare log
-- zip
 - upload FTP
 - delete server
 - delete sync
-- delete file zip

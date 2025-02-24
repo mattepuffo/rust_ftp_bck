@@ -4,16 +4,15 @@ mod log;
 mod sync;
 mod compress;
 
-use std::fmt::Display;
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::Select;
 use std::io::{self, Write};
+use colored::Colorize;
 
 fn main() {
-  // compress::delete_file("C:\\Users\\user\\AppData\\Local\\Temp\\Documenti.zip").unwrap();
   db::create_db();
 
-  let opzioni = vec!["FTP", "SYNC", "LOG", "BACKUP DB", "ESCI"];
+  let opzioni = vec!["FTP", "SYNC", "LOG", "BACKUP DB", "PULISCI BCK", "ESCI"];
 
   loop {
     let scelta = Select::with_theme(&ColorfulTheme::default())
@@ -28,8 +27,9 @@ fn main() {
       1 => gestione_sync(),
       2 => gestione_log(),
       3 => db::copy_db(),
-      4 => {
-        println!("USCITA...");
+      4 => compress::delete_file(),
+      5 => {
+        println!("{}", "USCITA...".yellow());
         break;
       }
       _ => unreachable!(),
@@ -51,10 +51,10 @@ fn gestione_sync() {
     match scelta {
       0 => sync::get_all_sync(),
       1 => {
-        println!("SCRIVI DUE VALORI DEL SYNC");
-        println!("NOME, PATH DA COMPRIMERE E SERVER SEPARATI DAL CARATTERE |");
-        println!("NOTA: CONVIENE PRIMA CREARE IL SERVER E ANNOTARSI IL NOME");
-        println!("AD ESEMPIO: nome1 | /home/fermat, | server1");
+        println!("{}", "SCRIVI DUE VALORI DEL SYNC".blue());
+        println!("{}", "NOME, PATH DA COMPRIMERE E SERVER SEPARATI DAL CARATTERE |".blue());
+        println!("{}", "NOTA: CONVIENE PRIMA CREARE IL SERVER E ANNOTARSI IL NOME".yellow());
+        println!("{}", "AD ESEMPIO: nome1 | /home/fermat, | server1".yellow());
 
         io::stdout().flush().unwrap();
 
@@ -108,8 +108,8 @@ fn gestione_ftp() {
 
     match scelta {
       0 => {
-        println!("SCRIVI SYNC E FTP SERVER SEPARATI DAL CARATTERE |");
-        println!("AD ESEMPIO: nome1 | server1");
+        println!("{}", "SCRIVI SYNC E FTP SERVER SEPARATI DAL CARATTERE |".blue());
+        println!("{}", "AD ESEMPIO: nome1 | server1".yellow());
 
         io::stdout().flush().unwrap();
 
@@ -118,49 +118,43 @@ fn gestione_ftp() {
 
         let mut parts = input.trim().split("|");
 
-        // let sync_name = parts.next().unwrap_or("").trim();
-        // let ftp_server = parts.next().unwrap_or("").trim();
+        let sync_name = parts.next().unwrap_or("").trim();
+        let ftp_server = parts.next().unwrap_or("").trim();
 
-        let sync_name = "sync1";
-        let ftp_server = "server1";
-
-        let mut directory_to_zip = String::new();
-        match sync::get_sync_by_key(sync_name) {
-          Ok(sync) => directory_to_zip = sync.value,
+        let directory_to_zip = match sync::get_sync_by_key(sync_name) {
+          Ok(sync) => sync.value,
           Err(err) => {
-            println!("Errore: {}", err);
+            println!("Errore: {}", err.red());
             break;
           }
-        }
+        };
 
-        let mut upload_server = String::new();
-        match ftp::get_server_by_name(ftp_server) {
-          Ok(server) => upload_server = server.host,
+        let upload_server = match ftp::get_server_by_name(ftp_server) {
+          Ok(server) => server.host,
           Err(err) => {
-            println!("Errore: {}", err);
+            println!("Errore: {}", err.red());
             break;
           }
-        }
+        };
 
-        let mut file_zipped = String::new();
-        let res_zip = compress::compress_directory("C:\\Personal\\Documenti");
-        // let res_zip = compress::compress_directory(&directory_to_zip);
+        let mut _file_zipped = String::new();
+        let res_zip = compress::compress_directory(&directory_to_zip);
 
         match res_zip {
-          Ok(path) => file_zipped = path,
-          Err(e) => println!("Errore: {}", e),
+          Ok(path) => _file_zipped = path,
+          Err(e) => println!("Errore: {}", e.red()),
         }
 
-        // println!("DIR TO ZIP: {}", directory_to_zip);
-        // println!("UPLOAD SERVER: {}", upload_server);
+        println!("{}", upload_server);
+        log::create_log("documenti");
       }
       1 => {
         ftp::get_all_server()
       }
       2 => {
-        println!("CREA UN SERVER FTP");
-        println!("SCRIVI NOME, HOST, USERNAME, PASSWORD SEPARATI DAL CARATTERE |");
-        println!("AD ESEMPIO: nome1 | 127.0.0.1 | user1 | sdkjfdkjs");
+        println!("{}", "CREA UN SERVER FTP".blue());
+        println!("{}", "SCRIVI NOME, HOST, USERNAME, PASSWORD SEPARATI DAL CARATTERE |".blue());
+        println!("{}", "AD ESEMPIO: nome1 | 127.0.0.1 | user1 | sdkjfdkjs".yellow());
 
         io::stdout().flush().unwrap();
 

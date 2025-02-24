@@ -1,4 +1,3 @@
-use crate::db;
 use duckdb::Connection;
 use prettytable::{color, Attr, Cell, Row, Table};
 use std::path::{Path, PathBuf};
@@ -33,15 +32,15 @@ pub fn get_all_sync() {
 
   let mut table = Table::new();
   table.add_row(Row::new(vec![
-    Cell::new("CHIAVE")
+    Cell::new("NOME")
         .with_style(Attr::Bold)
-        .with_style(Attr::ForegroundColor(color::YELLOW)),
-    Cell::new("VALORE")
+        .with_style(Attr::ForegroundColor(color::BLUE)),
+    Cell::new("CARTELLA")
         .with_style(Attr::Bold)
-        .with_style(Attr::ForegroundColor(color::GREEN)),
+        .with_style(Attr::ForegroundColor(color::CYAN)),
     Cell::new("SERVER")
         .with_style(Attr::Bold)
-        .with_style(Attr::ForegroundColor(color::YELLOW)),
+        .with_style(Attr::ForegroundColor(color::MAGENTA)),
   ]));
 
   for row in rows {

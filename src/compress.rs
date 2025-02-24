@@ -1,5 +1,5 @@
-use std::{env, fs, io};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
+use std::fs::{read_dir, remove_file};
 use zip_archive::Archiver;
 
 static ZIP_DIR: &'static str = "BCK";
@@ -20,12 +20,19 @@ pub fn compress_directory(dir: &str) -> Result<String, String> {
   }
 }
 
-pub fn delete_file(file_path: &str) -> io::Result<()> {
-  match fs::remove_file(file_path) {
-    Ok(_) => Ok(()),
-    Err(e) => {
-      eprintln!("Errore durante la cancellazione del file: {}", e);
-      Err(e)
+pub fn delete_file() {
+  let entries: Vec<_> = read_dir(ZIP_DIR)
+      .expect("Errore nella lettura della cartella")
+      .collect::<Result<_, _>>()
+      .expect("Errore nell'iterazione della cartella");
+
+  if !entries.is_empty() {
+    for entry in entries {
+      let path = entry.path();
+
+      if path.is_file() {
+        remove_file(&path).expect("Errore nell'eliminazione del file");
+      }
     }
   }
 }

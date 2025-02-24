@@ -48,16 +48,16 @@ pub fn get_all_server() {
   table.add_row(Row::new(vec![
     Cell::new("NOME")
         .with_style(Attr::Bold)
-        .with_style(Attr::ForegroundColor(color::RED)),
+        .with_style(Attr::ForegroundColor(color::BLUE)),
     Cell::new("HOST")
         .with_style(Attr::Bold)
-        .with_style(Attr::ForegroundColor(color::YELLOW)),
+        .with_style(Attr::ForegroundColor(color::CYAN)),
     Cell::new("USERNAME")
         .with_style(Attr::Bold)
-        .with_style(Attr::ForegroundColor(color::GREEN)),
+        .with_style(Attr::ForegroundColor(color::MAGENTA)),
     Cell::new("PASSWORD")
         .with_style(Attr::Bold)
-        .with_style(Attr::ForegroundColor(color::BLUE)),
+        .with_style(Attr::ForegroundColor(color::GREEN)),
   ]));
 
   for row in rows {

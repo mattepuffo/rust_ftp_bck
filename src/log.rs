@@ -1,5 +1,6 @@
 use std::path::{Path, PathBuf};
 use chrono::{DateTime, Utc};
+use colored::Colorize;
 use duckdb::Connection;
 use prettytable::{color, Attr, Cell, Row, Table};
 
@@ -25,7 +26,7 @@ pub fn create_log(value: &str) {
   )
       .expect("ERRORE DI INSERIMENTO NELLA TABELLA operation_log");
 
-  println!("OPERAZIONE AVVENUTA CON SUCCESSO!");
+  println!("{}", "OPERAZIONE AVVENUTA CON SUCCESSO!".blue());
   println!("=====");
 }
 
@@ -58,13 +59,13 @@ pub fn read_log() {
   table.add_row(Row::new(vec![
     Cell::new("ID")
         .with_style(Attr::Bold)
-        .with_style(Attr::ForegroundColor(color::RED)),
+        .with_style(Attr::ForegroundColor(color::BLUE)),
     Cell::new("OPERAZIONE")
         .with_style(Attr::Bold)
-        .with_style(Attr::ForegroundColor(color::YELLOW)),
+        .with_style(Attr::ForegroundColor(color::CYAN)),
     Cell::new("DATA")
         .with_style(Attr::Bold)
-        .with_style(Attr::ForegroundColor(color::GREEN)),
+        .with_style(Attr::ForegroundColor(color::MAGENTA)),
   ]));
 
   for row in rows {
