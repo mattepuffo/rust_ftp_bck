@@ -5,7 +5,7 @@ mod sync;
 mod compress;
 
 use dialoguer::theme::ColorfulTheme;
-use dialoguer::Select;
+use dialoguer::{Input, Select};
 use std::io::{self, Write};
 use colored::Colorize;
 
@@ -15,24 +15,36 @@ fn main() {
   let opzioni = vec!["FTP", "SYNC", "LOG", "BACKUP DB", "PULISCI BCK", "ESCI"];
 
   loop {
-    let scelta = Select::with_theme(&ColorfulTheme::default())
-        .with_prompt("Menu")
-        .default(0)
-        .items(&opzioni)
-        .interact()
+    for (i, opzione) in opzioni.iter().enumerate() {
+      println!("{}: {}", i + 1, opzione);
+    }
+
+    let scelta: usize = Input::with_theme(&ColorfulTheme::default())
+        .with_prompt("Seleziona un'opzione (1-6)")
+        .interact_text()
         .expect("ERRORE NELLA LETTURA DELL'INPUT");
 
+    // let scelta = Select::with_theme(&ColorfulTheme::default())
+    //     .with_prompt("Menu")
+    //     .default(0)
+    //     .items(&opzioni)
+    //     .interact()
+    //     .expect("ERRORE NELLA LETTURA DELL'INPUT");
+
     match scelta {
-      0 => gestione_ftp(),
-      1 => gestione_sync(),
-      2 => gestione_log(),
-      3 => db::copy_db(),
-      4 => compress::delete_file(),
-      5 => {
+      1 => gestione_ftp(),
+      2 => gestione_sync(),
+      3 => gestione_log(),
+      4 => db::copy_db(),
+      5 => compress::delete_file(),
+      6 => {
         println!("{}", "USCITA...".yellow());
         break;
       }
-      _ => unreachable!(),
+      _ => {
+        println!("{}", "NESSUNA VOCE CORRISPONDENTE...".red());
+        break;
+      },
     }
   }
 }
@@ -88,7 +100,7 @@ fn gestione_log() {
 
     match scelta {
       0 => log::read_log(),
-      1 => println!("CENCELLLAZIONE LOG"),
+      1 => log::clear_log(),
       2 => break,
       _ => unreachable!(),
     }

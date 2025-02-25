@@ -14,22 +14,6 @@ struct OperationLog {
 static DB_DIR: &'static str = "DATABASE";
 static DB_FILE: &'static str = "db.duckdb";
 
-pub fn create_log(value: &str) {
-  let now: DateTime<Utc> = Utc::now();
-
-  let db_path: PathBuf = Path::new(DB_DIR).join(DB_FILE);
-  let conn = Connection::open(db_path).unwrap();
-
-  conn.execute(
-    "INSERT INTO operation_log (id, operation, date) VALUES (NEXTVAL('seq_log_id'), ?, ?)",
-    [value, now.timestamp().to_string().as_str()],
-  )
-      .expect("ERRORE DI INSERIMENTO NELLA TABELLA operation_log");
-
-  println!("{}", "OPERAZIONE AVVENUTA CON SUCCESSO!".blue());
-  println!("=====");
-}
-
 pub fn read_log() {
   let db_path: PathBuf = Path::new(DB_DIR).join(DB_FILE);
   let conn = Connection::open(db_path).unwrap();
@@ -79,5 +63,32 @@ pub fn read_log() {
   }
 
   table.printstd();
+  println!("=====");
+}
+
+pub fn create_log(value: &str) {
+  let now: DateTime<Utc> = Utc::now();
+
+  let db_path: PathBuf = Path::new(DB_DIR).join(DB_FILE);
+  let conn = Connection::open(db_path).unwrap();
+
+  conn.execute(
+    "INSERT INTO operation_log (id, operation, date) VALUES (NEXTVAL('seq_log_id'), ?, ?)",
+    [value, now.timestamp().to_string().as_str()],
+  )
+      .expect("ERRORE DI INSERIMENTO NELLA TABELLA operation_log");
+
+  println!("{}", "OPERAZIONE AVVENUTA CON SUCCESSO!".blue());
+  println!("=====");
+}
+
+pub fn clear_log() {
+  let db_path: PathBuf = Path::new(DB_DIR).join(DB_FILE);
+  let conn = Connection::open(db_path).unwrap();
+
+  conn.execute("TRUNCATE operation_log", [])
+      .expect("ERRORE");
+
+  println!("{}", "OPERAZIONE AVVENUTA CON SUCCESSO!".blue());
   println!("=====");
 }
