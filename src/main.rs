@@ -5,7 +5,7 @@ mod sync;
 mod compress;
 
 use dialoguer::theme::ColorfulTheme;
-use dialoguer::{Input, Select};
+use dialoguer::{Input};
 use std::io::{self, Write};
 use colored::Colorize;
 
@@ -20,7 +20,7 @@ fn main() {
     }
 
     let scelta: usize = Input::with_theme(&ColorfulTheme::default())
-        .with_prompt("Seleziona un'opzione (1-6)")
+        .with_prompt("SELEZIONA UN'OPZIONE")
         .interact_text()
         .expect("ERRORE NELLA LETTURA DELL'INPUT");
 
@@ -44,7 +44,7 @@ fn main() {
       _ => {
         println!("{}", "NESSUNA VOCE CORRISPONDENTE...".red());
         break;
-      },
+      }
     }
   }
 }
@@ -53,16 +53,18 @@ fn gestione_sync() {
   let opzioni = vec!["VISUALIZZA SYNC", "AGGIUNGI SYNC", "INDIETRO"];
 
   loop {
-    let scelta = Select::with_theme(&ColorfulTheme::default())
+    for (i, opzione) in opzioni.iter().enumerate() {
+      println!("{}: {}", i + 1, opzione);
+    }
+
+    let scelta: usize = Input::with_theme(&ColorfulTheme::default())
         .with_prompt("GESTIONE SYNC")
-        .default(0)
-        .items(&opzioni)
-        .interact()
-        .unwrap();
+        .interact_text()
+        .expect("ERRORE NELLA LETTURA DELL'INPUT");
 
     match scelta {
-      0 => sync::get_all_sync(),
-      1 => {
+      1 => sync::get_all_sync(),
+      2 => {
         println!("{}", "SCRIVI DUE VALORI DEL SYNC".blue());
         println!("{}", "NOME, PATH DA COMPRIMERE E SERVER SEPARATI DAL CARATTERE |".blue());
         println!("{}", "NOTA: CONVIENE PRIMA CREARE IL SERVER E ANNOTARSI IL NOME".yellow());
@@ -81,8 +83,11 @@ fn gestione_sync() {
 
         sync::create_sync(&*k, &*v, &*s);
       }
-      2 => break,
-      _ => unreachable!(),
+      3 => break,
+      _ => {
+        println!("{}", "NESSUNA VOCE CORRISPONDENTE...".red());
+        break;
+      }
     }
   }
 }
@@ -91,18 +96,23 @@ fn gestione_log() {
   let opzioni = vec!["LEGGI LOG", "CANCELLA LOG", "INDIETRO"];
 
   loop {
-    let scelta = Select::with_theme(&ColorfulTheme::default())
+    for (i, opzione) in opzioni.iter().enumerate() {
+      println!("{}: {}", i + 1, opzione);
+    }
+
+    let scelta: usize = Input::with_theme(&ColorfulTheme::default())
         .with_prompt("GESTIONE LOG")
-        .default(0)
-        .items(&opzioni)
-        .interact()
-        .unwrap();
+        .interact_text()
+        .expect("ERRORE NELLA LETTURA DELL'INPUT");
 
     match scelta {
-      0 => log::read_log(),
-      1 => log::clear_log(),
-      2 => break,
-      _ => unreachable!(),
+      1 => log::read_log(),
+      2 => log::clear_log(),
+      3 => break,
+      _ => {
+        println!("{}", "NESSUNA VOCE CORRISPONDENTE...".red());
+        break;
+      }
     }
   }
 }
@@ -111,15 +121,17 @@ fn gestione_ftp() {
   let opzioni = vec!["ESEGUI BCK", "VISUALIZZA SERVER", "AGGIUNGI SERVER", "INDIETRO"];
 
   loop {
-    let scelta = Select::with_theme(&ColorfulTheme::default())
+    for (i, opzione) in opzioni.iter().enumerate() {
+      println!("{}: {}", i + 1, opzione);
+    }
+
+    let scelta: usize = Input::with_theme(&ColorfulTheme::default())
         .with_prompt("GESTIONE FTP")
-        .default(0)
-        .items(&opzioni)
-        .interact()
-        .unwrap();
+        .interact_text()
+        .expect("ERRORE NELLA LETTURA DELL'INPUT");
 
     match scelta {
-      0 => {
+      1 => {
         println!("{}", "SCRIVI SYNC E FTP SERVER SEPARATI DAL CARATTERE |".blue());
         println!("{}", "AD ESEMPIO: nome1 | server1".yellow());
 
@@ -160,10 +172,10 @@ fn gestione_ftp() {
         println!("{}", upload_server);
         log::create_log("documenti");
       }
-      1 => {
+      2 => {
         ftp::get_all_server()
       }
-      2 => {
+      3 => {
         println!("{}", "CREA UN SERVER FTP".blue());
         println!("{}", "SCRIVI NOME, HOST, USERNAME, PASSWORD SEPARATI DAL CARATTERE |".blue());
         println!("{}", "AD ESEMPIO: nome1 | 127.0.0.1 | user1 | sdkjfdkjs".yellow());
@@ -182,8 +194,11 @@ fn gestione_ftp() {
 
         ftp::add_server(&*name, &*host, &*username, &*password);
       }
-      3 => break,
-      _ => unreachable!(),
+      4 => break,
+      _ => {
+        println!("{}", "NESSUNA VOCE CORRISPONDENTE...".red());
+        break;
+      }
     }
   }
 }
