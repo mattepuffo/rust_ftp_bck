@@ -50,7 +50,7 @@ fn main() {
 }
 
 fn gestione_sync() {
-  let opzioni = vec!["VISUALIZZA SYNC", "AGGIUNGI SYNC", "INDIETRO"];
+  let opzioni = vec!["VISUALIZZA SYNC", "AGGIUNGI SYNC", "CANCELLA SYNC", "INDIETRO"];
 
   loop {
     for (i, opzione) in opzioni.iter().enumerate() {
@@ -68,7 +68,7 @@ fn gestione_sync() {
         println!("{}", "SCRIVI DUE VALORI DEL SYNC".blue());
         println!("{}", "NOME, PATH DA COMPRIMERE E SERVER SEPARATI DAL CARATTERE |".blue());
         println!("{}", "NOTA: CONVIENE PRIMA CREARE IL SERVER E ANNOTARSI IL NOME".yellow());
-        println!("{}", "AD ESEMPIO: nome1 | /home/fermat, | server1".yellow());
+        println!("{}", "AD ESEMPIO: nome1 | /home/fermat | server1".yellow());
 
         io::stdout().flush().unwrap();
 
@@ -81,9 +81,24 @@ fn gestione_sync() {
         let v = parts.next().unwrap_or("").trim();
         let s = parts.next().unwrap_or("").trim();
 
-        sync::create_sync(&*k, &*v, &*s);
+        sync::add_sync(&*k, &*v, &*s);
       }
-      3 => break,
+      3 => {
+        println!("{}", "CANCELLA UN SYNC".blue());
+        println!("{}", "SCRIVI IL NOME DEL SYNC CHE VUOI CANCELLARE".blue());
+        println!("{}", "AD ESEMPIO: nome1".yellow());
+
+        io::stdout().flush().unwrap();
+
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).unwrap();
+
+        let name = input.trim();
+
+        sync::del_sync(&*name);
+        sync::get_all_sync();
+      }
+      4 => break,
       _ => {
         println!("{}", "NESSUNA VOCE CORRISPONDENTE...".red());
         break;
@@ -118,7 +133,7 @@ fn gestione_log() {
 }
 
 fn gestione_ftp() {
-  let opzioni = vec!["ESEGUI BCK", "VISUALIZZA SERVER", "AGGIUNGI SERVER", "INDIETRO"];
+  let opzioni = vec!["ESEGUI BCK", "VISUALIZZA SERVER", "AGGIUNGI SERVER", "CANCELLA SERVER", "INDIETRO"];
 
   loop {
     for (i, opzione) in opzioni.iter().enumerate() {
@@ -194,7 +209,22 @@ fn gestione_ftp() {
 
         ftp::add_server(&*name, &*host, &*username, &*password);
       }
-      4 => break,
+      4 => {
+        println!("{}", "CANCELLA UN SERVER FTP".blue());
+        println!("{}", "SCRIVI IL NOME DEL SERVER CHE VUOI CANCELLARE".blue());
+        println!("{}", "AD ESEMPIO: nome1".yellow());
+
+        io::stdout().flush().unwrap();
+
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).unwrap();
+
+        let name = input.trim();
+
+        ftp::del_server(&*name);
+        ftp::get_all_server();
+      }
+      5 => break,
       _ => {
         println!("{}", "NESSUNA VOCE CORRISPONDENTE...".red());
         break;

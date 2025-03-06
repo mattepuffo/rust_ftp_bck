@@ -80,7 +80,7 @@ pub fn get_sync_by_key(k: &str) -> Result<Sync, String> {
   }
 }
 
-pub fn create_sync(key: &str, value: &str, server: &str) {
+pub fn add_sync(key: &str, value: &str, server: &str) {
   let db_path: PathBuf = Path::new(DB_DIR).join(DB_FILE);
   let conn = Connection::open(db_path).unwrap();
 
@@ -95,6 +95,20 @@ pub fn create_sync(key: &str, value: &str, server: &str) {
     ],
   )
       .expect("ERRORE DI INSERIMENTO NELLA TABELLA sync");
+
+  println!("OPERAZIONE AVVENUTA CON SUCCESSO!");
+  println!("=====");
+}
+
+pub fn del_sync(key: &str) {
+  let db_path: PathBuf = Path::new(DB_DIR).join(DB_FILE);
+  let conn = Connection::open(db_path).unwrap();
+
+  conn.execute(
+    "DELETE FROM sync WHERE key = ?",
+    [key],
+  )
+      .expect("ERRORE DI CANCELLAZIONE NELLA TABELLA ftp");
 
   println!("OPERAZIONE AVVENUTA CON SUCCESSO!");
   println!("=====");

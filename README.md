@@ -8,5 +8,3 @@ Internamente uso DuckDB per la configurazione e il salvataggio di log in cui mem
 - file zip con nome e data
 - in fase di creazione ftp indicare quale directory di upload
 - upload FTP
-- delete server
-- delete sync

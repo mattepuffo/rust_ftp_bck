@@ -112,3 +112,17 @@ pub fn add_server(name: &str, host: &str, username: &str, password: &str) {
   println!("OPERAZIONE AVVENUTA CON SUCCESSO!");
   println!("=====");
 }
+
+pub fn del_server(name: &str) {
+  let db_path: PathBuf = Path::new(DB_DIR).join(DB_FILE);
+  let conn = Connection::open(db_path).unwrap();
+
+  conn.execute(
+    "DELETE FROM ftp WHERE name = ?",
+    [name],
+  )
+      .expect("ERRORE DI CANCELLAZIONE NELLA TABELLA ftp");
+
+  println!("OPERAZIONE AVVENUTA CON SUCCESSO!");
+  println!("=====");
+}
